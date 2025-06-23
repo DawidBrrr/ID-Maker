@@ -9,7 +9,7 @@ build/
 .env
 
 # Virtual environment
-venv/
+.venv/
 env/
 
 # Global Node.js ignores (for frontend/)
