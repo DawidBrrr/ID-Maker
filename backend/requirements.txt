@@ -1,2 +1,6 @@
 flask
 flask-cors
+opencv-python
+numpy
+tqdm
+pywin32
