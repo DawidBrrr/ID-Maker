@@ -5,6 +5,7 @@ function App() {
   const [uploadResponse, setUploadResponse] = useState("");
   const [croppedUrl, setCroppedUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [sessionId, setSessionId] = useState(localStorage.getItem("session_id") || "");
 
   useEffect(() => {
     fetch("http://localhost:5000/api/hello")
@@ -26,6 +27,7 @@ function App() {
 
     const formData = new FormData();
     formData.append("file", file);
+    if(sessionId) formData.append("session_id", sessionId);
 
     fetch("http://localhost:5000/api/upload", {
       method: "POST",
@@ -33,6 +35,10 @@ function App() {
     })
       .then((res) => res.json())
       .then((data) => {
+        if (data.session_id) {
+          setSessionId(data.session_id);
+          localStorage.setItem("session_id", data.session_id);
+        }
         if (data.error) {
           setUploadResponse(`Error: ${data.error}`);
         } else {
@@ -50,6 +56,20 @@ function App() {
         setIsUploading(false);
       });
   };
+
+  // Czyszczenie przy zamknięciu strony:
+useEffect(() => {
+  const handleUnload = () => {
+    if (sessionId) {
+      navigator.sendBeacon(
+        "http://localhost:5000/api/clear",
+        JSON.stringify({ session_id: sessionId })
+      );
+    }
+  };
+  window.addEventListener("beforeunload", handleUnload);
+  return () => window.removeEventListener("beforeunload", handleUnload);
+}, [sessionId]);
 
   return (
     <div style={{ textAlign: "center", marginTop: "2rem", padding: "20px" }}>
