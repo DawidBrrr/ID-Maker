@@ -5,6 +5,8 @@ from utils import clear_client_data
 import os
 import uuid
 import glob
+import threading
+from concurrent.futures import ThreadPoolExecutor
 
 app = Flask(__name__)
 CORS(app)  # Pozwala reactowi łączyć się lokalnie
@@ -21,6 +23,11 @@ ERROR_FOLDER = os.path.join(DATA_FOLDER, 'errors')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 os.makedirs(ERROR_FOLDER, exist_ok=True)
+
+# Thread pool executor for background tasks
+executor = ThreadPoolExecutor(max_workers=4)
+tasks_status = {}
+lock = threading.Lock()
 
 @app.route("/api/hello")
 def hello():
@@ -53,46 +60,21 @@ def upload_file():
     print(f"Saved original file to: {filepath}")
 
     # Process the image using FastCropper
-    try:
-        process_image(image_path=filepath,
-                         error_folder=user_error_folder,
-                         output_folder=user_output_folder,
-                         debug_output=user_error_folder,
-                         res_x=400,
-                         res_y=500,
-                         top_margin_value=0.4,
-                         bottom_margin_value=0.5,
-                         left_right_margin_value=0,
-                         naming_config={
-                             "prefix": "",
-                             "name": "",
-                             "numbering_type": "",
-                             "extension": "Bez zmian"
-                         },
-                         image_count=1
-                         )
-        list_of_files = glob.glob(os.path.join(user_output_folder, '*'))
-        if not list_of_files:
-            return jsonify({"error": "No processed images found"}), 500
-        latest_file = max(list_of_files, key=os.path.getctime)
-        output_filename = os.path.basename(latest_file)
-    except Exception as e:
-        return jsonify({"error": f"Image processing failed: {str(e)}"}), 500
+    task_id = str(uuid.uuid4())
+    with lock:
+        tasks_status[task_id] = {"status": "processing"}
+    executor.submit(background_crop_task, task_id,session_id, filepath, user_output_folder, user_error_folder)
 
     return jsonify({
-        "message": f"File '{filename}' uploaded and processed successfully",
-        "cropped_file_url": f"/api/output/{session_id}/{output_filename}",
+        "message": "Processing started",
+        "task_id": task_id,
         "session_id": session_id
     })
 
-@app.route("/api/output/<path:filename>")
-def serve_output_file(filename):
-    return send_from_directory(OUTPUT_FOLDER, filename)
-
-# Keep the old route for backward compatibility
-@app.route("/uploads/<path:filename>")
-def download_file(filename):
-    return send_from_directory(OUTPUT_FOLDER, filename)
+@app.route("/api/output/<session_id>/<filename>")
+def serve_output_file(session_id, filename):
+    user_output_folder = os.path.join(OUTPUT_FOLDER, session_id)
+    return send_from_directory(user_output_folder, filename,as_attachment=True)
 
 
 @app.route("/api/clear", methods=["POST"])
@@ -114,6 +96,50 @@ def clear_data():
     user_error_folder = os.path.join(ERROR_FOLDER, session_id)
     clear_client_data(user_upload_folder, user_output_folder, user_error_folder)
     return jsonify({"message": "Data cleared"})
+
+@app.route("/api/status/<task_id>")
+def check_status(task_id):
+    with lock:
+        status = tasks_status.get(task_id)
+    if not status:
+        return jsonify({"error": "Invalid task_id"}), 404
+    return jsonify(status)
+
+
+
+def background_crop_task(task_id,session_id, filepath, user_output_folder, user_error_folder):
+    try:
+        process_image(
+            image_path=filepath,
+            error_folder=user_error_folder,
+            output_folder=user_output_folder,
+            debug_output=user_error_folder,
+            res_x=400,
+            res_y=500,
+            top_margin_value=0.4,
+            bottom_margin_value=0.5,
+            left_right_margin_value=0,
+            naming_config={"prefix": "", "name": "", "numbering_type": "", "extension": "Bez zmian"},
+            image_count=1
+        )
+        list_of_files = glob.glob(os.path.join(user_output_folder, '*'))
+        latest_file = max(list_of_files, key=os.path.getctime)
+        output_filename = os.path.basename(latest_file)
+        with lock:
+            tasks_status[task_id] = {
+                "status": "done",
+                "file": output_filename,
+                "cropped_file_url": f"/api/output/{session_id}/{output_filename}"
+            }
+    except Exception as e:
+        with lock:
+            tasks_status[task_id] = {
+                "status": "error",
+                "message": str(e)
+            }
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)

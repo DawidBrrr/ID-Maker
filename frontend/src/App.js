@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useRef,useEffect, useState } from 'react';
 
 function App() {
   const [message, setMessage] = useState('Loading...');
@@ -6,6 +6,7 @@ function App() {
   const [croppedUrl, setCroppedUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [sessionId, setSessionId] = useState(localStorage.getItem("session_id") || "");
+  const downloadRef = useRef(null);
 
   useEffect(() => {
     fetch("http://localhost:5000/api/hello")
@@ -37,7 +38,7 @@ function App() {
       .then((data) => {
         if (data.session_id) {
           setSessionId(data.session_id);
-          localStorage.setItem("session_id", data.session_id);
+          pollStatus(data.task_id, data.session_id);
         }
         if (data.error) {
           setUploadResponse(`Error: ${data.error}`);
@@ -55,6 +56,30 @@ function App() {
       .finally(() => {
         setIsUploading(false);
       });
+  };
+
+  function pollStatus(taskId, sessionId) {
+    const interval = setInterval(() => {
+      fetch(`http://localhost:5000/api/status/${taskId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === "done") {
+            clearInterval(interval);
+            setUploadResponse("Processing completed successfully!");
+            // Zbuduj link do obrazka:
+            const imageUrl = `http://localhost:5000/api/output/${sessionId}/${data.file}`;
+            setCroppedUrl(imageUrl);
+          } else if (data.status === "error") {
+            clearInterval(interval);
+            setUploadResponse(`Error: ${data.message}`);
+          }
+        });
+    }, 1000);
+  }
+  const handleDownload = () => {
+    if (downloadRef.current) {
+      downloadRef.current.click();
+    }
   };
 
   // Czyszczenie przy zamknięciu strony:
@@ -106,6 +131,33 @@ useEffect(() => {
               borderRadius: "8px"
             }} 
           />
+          <div style={{ marginTop: "16px" }}>
+            {/* Ukryty link do pobrania */}
+            <a
+              href={croppedUrl}
+              download
+              ref={downloadRef}
+              style={{ display: "none" }}
+            >
+              Download
+            </a>
+            <button
+              onClick={handleDownload}
+              style={{
+                display: "inline-block",
+                padding: "10px 24px",
+                background: "#1976d2",
+                color: "#fff",
+                borderRadius: "6px",
+                textDecoration: "none",
+                fontWeight: "bold",
+                border: "none",
+                cursor: "pointer"
+              }}
+            >
+              Download
+            </button>
+          </div>
         </div>
       )}
     </div>
