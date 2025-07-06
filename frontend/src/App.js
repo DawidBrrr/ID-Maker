@@ -7,9 +7,10 @@ function App() {
   const [isUploading, setIsUploading] = useState(false);
   const [sessionId, setSessionId] = useState(localStorage.getItem("session_id") || "");
   const downloadRef = useRef(null);
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/hello")
+    fetch(`${BACKEND_URL}/api/hello`)
       .then((res) => res.json())
       .then((data) => setMessage(data.message))
       .catch((error) => {
@@ -30,7 +31,7 @@ function App() {
     formData.append("file", file);
     if(sessionId) formData.append("session_id", sessionId);
 
-    fetch("http://localhost:5000/api/upload", {
+    fetch(`${BACKEND_URL}/api/upload`, {
       method: "POST",
       body: formData,
     })
@@ -45,7 +46,7 @@ function App() {
         } else {
           setUploadResponse(data.message);
           // Fix the URL construction
-          const imageUrl = `http://localhost:5000${data.cropped_file_url}`;
+          const imageUrl = `${BACKEND_URL}${data.cropped_file_url}`;
           setCroppedUrl(imageUrl);
         }
       })
@@ -60,14 +61,14 @@ function App() {
 
   function pollStatus(taskId, sessionId) {
     const interval = setInterval(() => {
-      fetch(`http://localhost:5000/api/status/${taskId}`)
+      fetch(`${BACKEND_URL}/api/status/${taskId}`)
         .then(res => res.json())
         .then(data => {
           if (data.status === "done") {
             clearInterval(interval);
             setUploadResponse("Processing completed successfully!");
             // Zbuduj link do obrazka:
-            const imageUrl = `http://localhost:5000/api/output/${sessionId}/${data.file}`;
+            const imageUrl = `${BACKEND_URL}/api/output/${sessionId}/${data.file}`;
             setCroppedUrl(imageUrl);
           } else if (data.status === "error") {
             clearInterval(interval);
@@ -87,7 +88,7 @@ useEffect(() => {
   const handleUnload = () => {
     if (sessionId) {
       navigator.sendBeacon(
-        "http://localhost:5000/api/clear",
+        `${BACKEND_URL}/api/clear`,
         JSON.stringify({ session_id: sessionId })
       );
     }

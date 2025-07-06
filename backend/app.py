@@ -15,7 +15,8 @@ CORS(app)  # Pozwala reactowi łączyć się lokalnie
 
 
 #Folders with uploaded and processed images
-DATA_FOLDER = 'Data'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_FOLDER = os.path.join(BASE_DIR, 'Data')
 UPLOAD_FOLDER = os.path.join(DATA_FOLDER, 'uploads')
 OUTPUT_FOLDER = os.path.join(DATA_FOLDER, 'output')
 ERROR_FOLDER = os.path.join(DATA_FOLDER, 'errors')
@@ -142,4 +143,4 @@ def background_crop_task(task_id,session_id, filepath, user_output_folder, user_
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
