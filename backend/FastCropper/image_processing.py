@@ -58,7 +58,7 @@ def process_image(image_path,
     original_filename, original_extension = os.path.splitext(os.path.basename(image_path))
     image = cv2_imread_unicode(image_path)
     supported_formats = ["jpg", "jpeg", "png", "webp"]
-    if original_extension.lower() not in supported_formats:
+    if original_extension.lower().lstrip(".") not in supported_formats:
         print(f"\rInvalid image format or unsupported format, skipping {original_filename}{original_extension}")
         error_count += 1
         return error_count
