@@ -1,13 +1,15 @@
 import cv2
 import os
 import imghdr
-import win32com.client
 from tqdm import tqdm
 from datetime import datetime
 import numpy as np
 from FastCropper import variable
 from utils import *
 
+
+#TODO Redo images_error without win32
+"""
 def images_error(image_path, error_folder):
     shell = win32com.client.Dispatch("WScript.Shell")
     filename_shortcut = os.path.basename(image_path)
@@ -15,7 +17,7 @@ def images_error(image_path, error_folder):
     shortcut = shell.CreateShortcut(shortcut_path)
     shortcut.TargetPath = os.path.abspath(image_path)
     shortcut.Save()
-
+"""
 
 def process_image(image_path,
                   error_folder,
@@ -65,7 +67,7 @@ def process_image(image_path,
     
     if image.shape[0] <= 300 or image.shape[1] <= 300:
         print(f"\rThe resolution is too low for face detection, skipping {original_filename}{original_extension}")
-        images_error(image_path, error_folder)
+        #images_error(image_path, error_folder)
         error_count += 1
         return error_count
     
@@ -96,13 +98,13 @@ def process_image(image_path,
     if highest_confidence < variable.confidence_level:
         print(f"\rConfidence level too low ({int(highest_confidence * 100)}%), skipping face_{best_detection_index} on {original_filename}{original_extension}")
         error_msg = "CONFIDENCE LEVEL TOO LOW"
-        images_error(image_path, error_folder)
+        #images_error(image_path, error_folder)
         is_error = True
         error_count += 1
     elif best_detection is None:
         print(f"\rFace resolution is too small for face crop, skipping faces on {original_filename}{original_extension}")
         error_msg = "FACE RESOLUTION IS TOO SMALL"
-        images_error(image_path, error_folder)
+        #images_error(image_path, error_folder)
         is_error = True
         error_count += 1
     
