@@ -1,6 +1,5 @@
 import cv2
 import os
-import imghdr
 from tqdm import tqdm
 from datetime import datetime
 import numpy as np
@@ -58,9 +57,8 @@ def process_image(image_path,
     is_error = False
     original_filename, original_extension = os.path.splitext(os.path.basename(image_path))
     image = cv2_imread_unicode(image_path)
-    image_format = imghdr.what(image_path)
     supported_formats = ["jpg", "jpeg", "png", "webp"]
-    if image_format is None or image_format not in supported_formats:
+    if original_extension.lower() not in supported_formats:
         print(f"\rInvalid image format or unsupported format, skipping {original_filename}{original_extension}")
         error_count += 1
         return error_count
