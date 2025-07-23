@@ -1,165 +1,84 @@
-import React, { useRef,useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from "react";
+import styles from "./styles/App.module.css";
+import FileUpload from "./components/FileUpload";
+import ImagePreview from "./components/ImagePreview";
+import Message from "./components/Message";
+import { fetchHello, clearSession, pollStatus } from "./utils/api";
 
 function App() {
-  const [message, setMessage] = useState('Loading...');
+  const [message, setMessage] = useState("Ładowanie...");
   const [uploadResponse, setUploadResponse] = useState("");
   const [croppedUrl, setCroppedUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [sessionId, setSessionId] = useState(localStorage.getItem("session_id") || "");
   const downloadRef = useRef(null);
+
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
   useEffect(() => {
-    fetch(`${BACKEND_URL}/api/hello`)
-      .then((res) => res.json())
+    fetchHello()
       .then((data) => setMessage(data.message))
-      .catch((error) => {
-        console.error('Error:', error);
-        setMessage('Error fetching message');
-      });
+      .catch(() => setMessage("Problem z pobraniem danych"));
   }, []);
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    setUploadResponse("Uploading and processing...");
-    setCroppedUrl("");
-
-    const formData = new FormData();
-    formData.append("file", file);
-    if(sessionId) formData.append("session_id", sessionId);
-
-    fetch(`${BACKEND_URL}/api/upload`, {
-      method: "POST",
-      body: formData,
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.session_id) {
-          setSessionId(data.session_id);
-          pollStatus(data.task_id, data.session_id);
-        }
-        if (data.error) {
-          setUploadResponse(`Error: ${data.error}`);
-        } else {
-          setUploadResponse(data.message);
-          // Fix the URL construction
-          const imageUrl = `${BACKEND_URL}${data.cropped_file_url}`;
-          setCroppedUrl(imageUrl);
-        }
-      })
-      .catch((error) => {
-        console.error('Upload error:', error);
-        setUploadResponse('Error uploading file');
-      })
-      .finally(() => {
-        setIsUploading(false);
-      });
-  };
-
-  function pollStatus(taskId, sessionId) {
+  const startPolling = (taskId, sessionId) => {
     const interval = setInterval(() => {
-      fetch(`${BACKEND_URL}/api/status/${taskId}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === "done") {
-            clearInterval(interval);
-            setUploadResponse("Processing completed successfully!");
-            // Zbuduj link do obrazka:
-            const imageUrl = `${BACKEND_URL}/api/output/${sessionId}/${data.file}`;
-            setCroppedUrl(imageUrl);
-          } else if (data.status === "error") {
-            clearInterval(interval);
-            setUploadResponse(`Error: ${data.message}`);
-          }
-        });
+      pollStatus(taskId).then((data) => {
+        if (data.status === "done") {
+          clearInterval(interval);
+          setUploadResponse("Przetwarzanie zakończone pomyślnie!");
+          setCroppedUrl(`${BACKEND_URL}/api/output/${sessionId}/${data.file}`);
+        } else if (data.status === "error") {
+          clearInterval(interval);
+          setUploadResponse(`Error: ${data.message}`);
+        }
+      });
     }, 1000);
-  }
-  const handleDownload = () => {
-    if (downloadRef.current) {
-      downloadRef.current.click();
+  };
+
+  const handleUpload = (data, formData) => {
+    if (data.session_id) {
+      setSessionId(data.session_id);
+      localStorage.setItem("session_id", data.session_id);
+      startPolling(data.task_id, data.session_id);
+    }
+    if (data.error) {
+      setUploadResponse(`Error: ${data.error}`);
+    } else {
+      setUploadResponse(data.message);
+      if (data.cropped_file_url) {
+        const imageUrl = `${BACKEND_URL}${data.cropped_file_url}`;
+        setCroppedUrl(imageUrl);
+      }
     }
   };
 
-  // Czyszczenie przy zamknięciu strony:
-useEffect(() => {
-  const handleUnload = () => {
-    if (sessionId) {
-      navigator.sendBeacon(
-        `${BACKEND_URL}/api/clear`,
-        JSON.stringify({ session_id: sessionId })
-      );
-    }
-  };
-  window.addEventListener("beforeunload", handleUnload);
-  return () => window.removeEventListener("beforeunload", handleUnload);
-}, [sessionId]);
+  useEffect(() => {
+    const handleUnload = () => {
+      if (sessionId) clearSession(sessionId);
+    };
+    window.addEventListener("beforeunload", handleUnload);
+    return () => window.removeEventListener("beforeunload", handleUnload);
+  }, [sessionId]);
 
   return (
-    <div style={{ textAlign: "center", marginTop: "2rem", padding: "20px" }}>
+    <div className={styles.container}>
       <h1>{message}</h1>
-      
-      <div style={{ margin: "20px 0" }}>
-        <input 
-          type="file" 
-          onChange={handleFileChange} 
-          accept="image/*"
-          disabled={isUploading}
-        />
-      </div>
-      
-      {uploadResponse && (
-        <p style={{ 
-          color: uploadResponse.includes('Error') ? 'red' : 'green',
-          fontWeight: 'bold'
-        }}>
-          {uploadResponse}
-        </p>
-      )}
-
+      <FileUpload
+        onUploadComplete={handleUpload}
+        setIsUploading={setIsUploading}
+        isUploading={isUploading}
+        setUploadResponse={setUploadResponse}
+        setCroppedUrl={setCroppedUrl}
+        sessionId={sessionId}
+      />
+      <Message message={uploadResponse} />
       {croppedUrl && (
-        <div style={{ marginTop: "20px" }}>
-          <h3>Cropped Image:</h3>
-          <img 
-            src={croppedUrl} 
-            alt="Cropped result" 
-            style={{ 
-              border: "1px solid #ccc", 
-              maxWidth: "100%", 
-              height: "auto",
-              borderRadius: "8px"
-            }} 
-          />
-          <div style={{ marginTop: "16px" }}>
-            {/* Ukryty link do pobrania */}
-            <a
-              href={croppedUrl}
-              download
-              ref={downloadRef}
-              style={{ display: "none" }}
-            >
-              Download
-            </a>
-            <button
-              onClick={handleDownload}
-              style={{
-                display: "inline-block",
-                padding: "10px 24px",
-                background: "#1976d2",
-                color: "#fff",
-                borderRadius: "6px",
-                textDecoration: "none",
-                fontWeight: "bold",
-                border: "none",
-                cursor: "pointer"
-              }}
-            >
-              Download
-            </button>
-          </div>
-        </div>
+        <ImagePreview
+          imageUrl={croppedUrl}
+          downloadRef={downloadRef}
+          onDownload={() => downloadRef.current?.click()}
+        />
       )}
     </div>
   );

@@ -1,0 +1,39 @@
+.previewContainer {
+  margin-top: 30px;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* centrowanie w pionie */
+}
+
+.image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  margin-bottom: 16px; /* odstęp od przycisku */
+  transition: transform 0.3s ease;
+}
+
+.image:hover {
+  transform: scale(1.01);
+}
+
+.button {
+  padding: 12px 28px;
+  background-color: #1976d2;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.button:hover {
+  background-color: #145ca8;
+}

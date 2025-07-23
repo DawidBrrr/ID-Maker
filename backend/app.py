@@ -32,7 +32,7 @@ lock = threading.Lock()
 
 @app.route("/api/hello")
 def hello():
-    return jsonify({"message": "Siema z backendu przytnij Fote!"})
+    return jsonify({"message": "Skadruj portret!"})
 
 @app.route("/api/upload", methods=["POST"])
 def upload_file():
@@ -67,7 +67,7 @@ def upload_file():
     executor.submit(background_crop_task, task_id,session_id, filepath, user_output_folder, user_error_folder)
 
     return jsonify({
-        "message": "Processing started",
+        "message": "Rozpoczęto przetwarzanie",
         "task_id": task_id,
         "session_id": session_id
     })

@@ -1,0 +1,25 @@
+.uploadContainer {
+  margin: 30px auto;
+  text-align: center;
+}
+
+.customButton {
+  padding: 12px 28px;
+  background-color: #1976d2;
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.customButton:hover {
+  background-color: #145ca8;
+}
+
+.customButton:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
