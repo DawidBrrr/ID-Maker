@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from FastCropper.image_processing import process_image
 from utils import clear_client_data
+from constants import DOCUMENT_TYPES
 import os
 import uuid
 import glob
@@ -60,11 +61,25 @@ def upload_file():
     file.save(filepath)
     print(f"Saved original file to: {filepath}")
 
+    document_type = request.form.get("document_type", "id_card")  # Default to 'id_card' if not provided
+    params = DOCUMENT_TYPES.get(document_type, DOCUMENT_TYPES["id_card"]) # Default to 'id_card' if type not found
+
+    
     # Process the image using FastCropper
     task_id = str(uuid.uuid4())
     with lock:
         tasks_status[task_id] = {"status": "processing"}
-    executor.submit(background_crop_task, task_id,session_id, filepath, user_output_folder, user_error_folder)
+    executor.submit(
+        background_crop_task, 
+        task_id,session_id, 
+        filepath, 
+        user_output_folder, 
+        user_error_folder,
+        params["res_x"], 
+        params["res_y"],
+        params["top_margin_value"],
+        params["bottom_margin_value"],
+        params["left_right_margin_value"])
 
     return jsonify({
         "message": "Rozpoczęto przetwarzanie",
@@ -108,18 +123,27 @@ def check_status(task_id):
 
 
 
-def background_crop_task(task_id,session_id, filepath, user_output_folder, user_error_folder):
+def background_crop_task(
+        task_id,session_id, 
+        filepath, 
+        user_output_folder, 
+        user_error_folder,
+        document_res_X,
+        document_res_Y,
+        document_top_margin_value,
+        document_bottom_margin_value,
+        document_left_right_margin_value):
     try:
         process_image(
             image_path=filepath,
             error_folder=user_error_folder,
             output_folder=user_output_folder,
             debug_output=user_error_folder,
-            res_x=400,
-            res_y=500,
-            top_margin_value=0.4,
-            bottom_margin_value=0.5,
-            left_right_margin_value=0,
+            res_x=document_res_X,
+            res_y=document_res_Y,
+            top_margin_value=document_top_margin_value,
+            bottom_margin_value=document_bottom_margin_value,
+            left_right_margin_value=document_left_right_margin_value,
             naming_config={"prefix": "", "name": "", "numbering_type": "", "extension": "Bez zmian"},
             image_count=1
         )

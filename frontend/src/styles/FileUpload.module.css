@@ -1,25 +1,110 @@
 .uploadContainer {
-  margin: 30px auto;
   text-align: center;
+  margin: 40px 0;
 }
 
-.customButton {
-  padding: 12px 28px;
-  background-color: #1976d2;
+.uploadButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border: none;
-  border-radius: 8px;
-  color: #fff;
+  border-radius: 16px;
+  color: white;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.1rem;
   cursor: pointer;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  position: relative;
+  overflow: hidden;
+  min-width: 200px;
+  min-height: 60px;
 }
 
-.customButton:hover {
-  background-color: #145ca8;
+.uploadButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease;
 }
 
-.customButton:disabled {
-  background-color: #ccc;
+.uploadButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.5);
+}
+
+.uploadButton:hover::before {
+  left: 100%;
+}
+
+.uploadButton:active {
+  transform: translateY(0);
+}
+
+.uploadButton:disabled {
   cursor: not-allowed;
+  opacity: 0.7;
+  transform: none;
+}
+
+.loading {
+  pointer-events: none;
+}
+
+.uploadIcon {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.3s ease;
+}
+
+.uploadButton:hover .uploadIcon {
+  transform: scale(1.1);
+}
+
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.uploadHint {
+  margin-top: 16px;
+  font-size: 0.9rem;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+  .uploadButton {
+    padding: 14px 24px;
+    font-size: 1rem;
+    min-width: 180px;
+    min-height: 56px;
+  }
+  
+  .uploadIcon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .uploadHint {
+    font-size: 0.85rem;
+    padding: 0 20px;
+    margin-top: 12px;
+  }
 }

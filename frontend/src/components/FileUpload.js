@@ -8,7 +8,8 @@ export default function FileUpload({
   isUploading,
   setUploadResponse,
   setCroppedUrl,
-  sessionId
+  sessionId,
+  documentType
 }) {
   const fileInputRef = useRef();
 
@@ -26,6 +27,7 @@ export default function FileUpload({
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("document_type", documentType); 
     if (sessionId) formData.append("session_id", sessionId);
 
     try {
@@ -41,7 +43,6 @@ export default function FileUpload({
 
   return (
     <div className={styles.uploadContainer}>
-      {/* Ukryty input */}
       <input
         type="file"
         accept="image/*"
@@ -50,10 +51,32 @@ export default function FileUpload({
         style={{ display: "none" }}
         disabled={isUploading}
       />
-      {/* Stylowany przycisk */}
-      <button className={styles.customButton} onClick={handleClick} disabled={isUploading}>
-        {isUploading ? "Ładowanie..." : "Wybierz zdjęcie"}
+      
+      <button 
+        className={`${styles.uploadButton} ${isUploading ? styles.loading : ''}`} 
+        onClick={handleClick} 
+        disabled={isUploading}
+      >
+        {isUploading ? (
+          <>
+            <div className={styles.spinner}></div>
+            <span>Przetwarzanie...</span>
+          </>
+        ) : (
+          <>
+            <svg className={styles.uploadIcon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 15V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <polyline points="7,10 12,15 17,10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            </svg>
+            <span>Wybierz zdjęcie</span>
+          </>
+        )}
       </button>
+      
+      <p className={styles.uploadHint}>
+        Obsługiwane formaty: JPG, PNG, WEBP • Maksymalny rozmiar: 10MB
+      </p>
     </div>
   );
 }
