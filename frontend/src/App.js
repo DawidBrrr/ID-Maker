@@ -12,7 +12,7 @@ function App() {
   const [croppedUrl, setCroppedUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [sessionId, setSessionId] = useState(localStorage.getItem("session_id") || "");
-  const [documentType, setDocumentType] = useState("id_card"); // domyślnie paszport
+  const [documentType, setDocumentType] = useState("id_card"); // domyślnie dowód osobisty
   const downloadRef = useRef(null);
 
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;

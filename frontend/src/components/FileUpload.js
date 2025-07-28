@@ -13,6 +13,8 @@ export default function FileUpload({
 }) {
   const fileInputRef = useRef();
 
+
+
   const handleClick = () => {
     fileInputRef.current.click();
   };
@@ -20,6 +22,21 @@ export default function FileUpload({
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
+
+    // Check extension
+    const allowedExtensions = ["jpg", "jpeg", "png", "webp"];
+    const fileExt = file.name.split('.').pop().toLowerCase();
+    if (!allowedExtensions.includes(fileExt)) {
+      setUploadResponse("Nieprawidłowy format pliku. Dozwolone: JPG, JPEG, PNG, WEBP.");
+      return;
+    }
+
+    // Check file size max 10MB
+    const maxSize = 16 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setUploadResponse("Plik jest za duży (maksymalnie 16MB).");
+      return;
+    }
 
     setIsUploading(true);
     setUploadResponse("Przesyłanie i przetwarzanie danych...");
