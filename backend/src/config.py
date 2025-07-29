@@ -11,6 +11,9 @@ class Config:
     # Folders
     BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     DATA_FOLDER: str = os.path.join(BASE_DIR, 'Data')
+    UPLOAD_FOLDER = os.path.join(DATA_FOLDER, 'uploads')
+    OUTPUT_FOLDER = os.path.join(DATA_FOLDER, 'output')
+    ERROR_FOLDER = os.path.join(DATA_FOLDER, 'errors')
     
     # Limity
     MAX_CONTENT_LENGTH: int = 16 * 1024 * 1024  # 16MB

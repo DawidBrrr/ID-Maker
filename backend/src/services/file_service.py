@@ -25,7 +25,7 @@ class FileService:
         
         return upload_folder, output_folder, error_folder
     
-    def save_uploaded_file(self, file: FileStorage, session_id: str) -> str:
+    def save_uploaded_file(self, file: FileStorage, session_id: str, max_files_override: Optional[int] = None) -> str:
         """Zapisuje przesłany plik"""
         # Walidacja
         is_valid, error_msg = validate_file(file)
@@ -35,8 +35,10 @@ class FileService:
         # Sprawdź limit plików na sesję
         upload_folder, _, _ = self.get_user_folders(session_id)
         existing_files = len(os.listdir(upload_folder))
-        if existing_files >= config.MAX_FILES_PER_SESSION:
-            raise ValidationException(f"Przekroczony limit plików na sesję ({config.MAX_FILES_PER_SESSION})")
+        
+        max_files = max_files_override or config.MAX_FILES_PER_SESSION
+        if existing_files >= max_files:
+            raise ValidationException(f"Przekroczony limit plików na sesję ({max_files})")
         
         # Sanityzuj nazwę pliku
         safe_filename = sanitize_filename(file.filename)
@@ -93,6 +95,33 @@ class FileService:
         filepath = os.path.join(folder, filename)
         
         return os.path.exists(filepath) and os.path.isfile(filepath)
+    
+    def get_file_info(self, session_id: str, filename: str, folder_type: str = 'output') -> Optional[dict]:
+        """Zwraca informacje o pliku"""
+        if not self.file_exists(session_id, filename, folder_type):
+            return None
+        
+        upload_folder, output_folder, error_folder = self.get_user_folders(session_id)
+        folder_map = {
+            'upload': upload_folder,
+            'output': output_folder,
+            'error': error_folder
+        }
+        
+        folder = folder_map.get(folder_type, output_folder)
+        filepath = os.path.join(folder, filename)
+        
+        try:
+            stat = os.stat(filepath)
+            return {
+                'filename': filename,
+                'size': stat.st_size,
+                'created': stat.st_ctime,
+                'modified': stat.st_mtime,
+                'folder_type': folder_type
+            }
+        except OSError:
+            return None
 
 # Singleton instance
 file_service = FileService()
