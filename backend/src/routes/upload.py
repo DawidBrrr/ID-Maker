@@ -1,12 +1,10 @@
 from flask import Blueprint, request, jsonify, g
-import json
 import uuid
 import logging
 import shutil
 import os
 from ..config import config
 from ..utils.decorators import log_request, handle_errors
-from ..utils.helpers import clear_client_data
 from ..services.file_service import file_service
 from ..services.image_service import image_service
 from ..services.task_service import task_service
@@ -110,26 +108,3 @@ def upload_file():
         logger.error(f"Upload error: {str(e)} for user: {g.get('user_id', 'anonymous')}", exc_info=True)
         return jsonify({"error": "Upload failed"}), 500
     
-
-@upload_bp.route('/clear', methods=['POST'])
-@advanced_rate_limit(max_requests=30, window_minutes=1)
-@log_request
-@handle_errors
-def clear_data():
-    session_id = None
-    if request.is_json:
-        session_id = request.json.get("session_id")
-    else:
-        import json
-        try:
-            data = json.loads(request.data)
-            session_id = data.get("session_id")
-        except Exception:
-            pass
-    if not session_id:
-        return jsonify({"error": "No session_id provided"}), 400
-    user_upload_folder = os.path.join(config.UPLOAD_FOLDER, session_id)
-    user_output_folder = os.path.join(config.OUTPUT_FOLDER, session_id)
-    user_error_folder = os.path.join(config.ERROR_FOLDER, session_id)
-    clear_client_data(user_upload_folder, user_output_folder, user_error_folder)
-    return jsonify({"message": "Data cleared"})

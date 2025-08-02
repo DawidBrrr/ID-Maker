@@ -19,13 +19,13 @@ def create_app():
     # Konfiguracja
     app.config['SECRET_KEY'] = config.SECRET_KEY
     app.config['MAX_CONTENT_LENGTH'] = config.MAX_CONTENT_LENGTH
-    app.config['DEBUG'] = config.DEBUG
+    #app.config['DEBUG'] = config.DEBUG
     
     # CORS - bardziej restrykcyjne w produkcji
-    if config.DEBUG:
-        CORS(app)
-    else:
-        CORS(app, origins=['https://kadr-backend.onrender.com'])
+    #if config.DEBUG:
+    CORS(app)
+    #else:
+        #CORS(app, origins=['https://kadr-backend.onrender.com'])
     
     # Logging
     setup_logging(app)
