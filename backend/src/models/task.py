@@ -10,20 +10,11 @@ class TaskStatus(Enum):
     FAILED = "failed"
 
 class Task:
-    def __init__(
-        self, 
-        session_id: str, 
-        filename: str, 
-        document_type: str = "id_card",
-        user_id: Optional[str] = None,
-        authenticated: bool = False
-    ):
+    def __init__(self, session_id: str, filename: str, document_type: str = "id_card"):
         self.id = str(uuid.uuid4())
         self.session_id = session_id
         self.filename = filename
         self.document_type = document_type
-        self.user_id = user_id
-        self.authenticated = authenticated
         self.status = TaskStatus.PENDING
         self.created_at = datetime.now()
         self.updated_at = datetime.now()
@@ -56,8 +47,6 @@ class Task:
             "session_id": self.session_id,
             "filename": self.filename,
             "document_type": self.document_type,
-            "user_id": self.user_id,
-            "authenticated": self.authenticated,
             "status": self.status.value,
             "created_at": self.created_at.isoformat(),
             "updated_at": self.updated_at.isoformat(),

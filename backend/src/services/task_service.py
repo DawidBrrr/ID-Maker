@@ -11,21 +11,12 @@ class TaskService:
         self.tasks: Dict[str, Task] = {}
         self.lock = threading.Lock()
     
-    def create_task(
-        self, 
-        session_id: str, 
-        filename: str, 
-        document_type: str,
-        user_id: Optional[str] = None,
-        authenticated: bool = False
-    ) -> Task:
+    def create_task(self, session_id: str, filename: str, document_type: str) -> Task:
         """Tworzy nowy task"""
         task = Task(
             session_id=session_id,
             filename=filename,
-            document_type=document_type,
-            user_id=user_id,
-            authenticated=authenticated
+            document_type=document_type
         )
         
         with self.lock:
@@ -74,33 +65,12 @@ class TaskService:
         with self.lock:
             return [task for task in self.tasks.values() if task.session_id == session_id]
     
-    def get_user_tasks(self, user_id: str) -> List[Task]:
-        """Pobiera wszystkie taski dla użytkownika"""
-        with self.lock:
-            return [
-                task for task in self.tasks.values() 
-                if task.user_id == user_id
-            ]
-    
     def clear_session_tasks(self, session_id: str) -> int:
         """Usuwa wszystkie taski z sesji"""
         with self.lock:
             tasks_to_remove = [
                 task_id for task_id, task in self.tasks.items()
                 if task.session_id == session_id
-            ]
-            
-            for task_id in tasks_to_remove:
-                del self.tasks[task_id]
-        
-        return len(tasks_to_remove)
-    
-    def clear_user_tasks(self, user_id: str) -> int:
-        """Usuwa wszystkie taski użytkownika"""
-        with self.lock:
-            tasks_to_remove = [
-                task_id for task_id, task in self.tasks.items()
-                if task.user_id == user_id
             ]
             
             for task_id in tasks_to_remove:
@@ -116,17 +86,11 @@ class TaskService:
                 'pending': 0,
                 'processing': 0,
                 'completed': 0,
-                'failed': 0,
-                'authenticated': 0,
-                'anonymous': 0
+                'failed': 0
             }
             
             for task in self.tasks.values():
                 stats[task.status.value] += 1
-                if task.authenticated:
-                    stats['authenticated'] += 1
-                else:
-                    stats['anonymous'] += 1
             
             return stats
 

@@ -2,7 +2,7 @@ import os
 import shutil
 import glob
 import time
-from typing import Optional, List
+from typing import Optional
 from werkzeug.datastructures import FileStorage
 
 from ..config import config
