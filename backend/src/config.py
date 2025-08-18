@@ -5,7 +5,6 @@ from typing import Set
 @dataclass
 class Config:
     # Basic configuration
-    SECRET_KEY: str = os.getenv('SECRET_KEY', 'dev-key-change-in-production')
     DEBUG: bool = os.getenv('DEBUG', 'False').lower() == 'true'
     
     # Folders

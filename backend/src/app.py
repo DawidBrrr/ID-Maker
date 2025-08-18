@@ -17,7 +17,6 @@ def create_app():
     app = Flask(__name__)
     
     # Konfiguracja
-    app.config['SECRET_KEY'] = config.SECRET_KEY
     app.config['MAX_CONTENT_LENGTH'] = config.MAX_CONTENT_LENGTH
     #app.config['DEBUG'] = config.DEBUG
     

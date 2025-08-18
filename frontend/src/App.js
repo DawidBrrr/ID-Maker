@@ -29,7 +29,7 @@ function App() {
         if (data.status === "done") {
           clearInterval(interval);
           setUploadResponse("Przetwarzanie zakończone pomyślnie!");
-          setCroppedUrl(`${BACKEND_URL}/api/output/${sessionId}/${data.file}`);
+          setCroppedUrl(`${BACKEND_URL}${data.cropped_file_url}`);
         } else if (data.status === "error") {
           clearInterval(interval);
           setUploadResponse(`Error: ${data.message}`);

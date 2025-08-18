@@ -6,16 +6,6 @@ import numpy as np
 from . import variable
 
 
-#TODO Redo images_error without win32
-"""
-def images_error(image_path, error_folder):
-    shell = win32com.client.Dispatch("WScript.Shell")
-    filename_shortcut = os.path.basename(image_path)
-    shortcut_path = os.path.join(error_folder, filename_shortcut + ".lnk")
-    shortcut = shell.CreateShortcut(shortcut_path)
-    shortcut.TargetPath = os.path.abspath(image_path)
-    shortcut.Save()
-"""
 
 def process_image(image_path,
                   error_folder,
