@@ -21,7 +21,8 @@ class FileService:
         
         # Stwórz foldery jeśli nie istnieją
         for folder in [upload_folder, output_folder, error_folder]:
-            os.makedirs(folder, exist_ok=True)
+            if not os.path.exists(folder):  # Sprawdź, czy folder istnieje
+                os.makedirs(folder, exist_ok=True)
         
         return upload_folder, output_folder, error_folder
     

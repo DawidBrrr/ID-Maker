@@ -16,7 +16,6 @@ def check_status(task_id):
         return jsonify({"error": "Invalid task_id", "status": "error"}), 404
     
     response_data = task.to_dict()
-    print(f"Task ID: {task_id}, Response Data: {response_data}")
     # Add URL to the file if ready
     if task.result_file:
         response_data['cropped_file_url'] = f"/api/output/{task.session_id}/{task.result_file}"

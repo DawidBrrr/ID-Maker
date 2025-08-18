@@ -62,6 +62,27 @@ function App() {
     window.addEventListener("beforeunload", handleUnload);
     return () => window.removeEventListener("beforeunload", handleUnload);
   }, [sessionId]);
+  const handleDownload = async () => {
+    try {
+      const response = await fetch(croppedUrl);
+      const blob = await response.blob();
+
+      // Extract the original file name from the URL
+      const originalFileName = croppedUrl.split("/").pop();
+      const fileName = originalFileName.replace(/(\.[^.]*)$/, "-skadrowane$1"); // Append '-skadrowane' before the extension
+
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName; // Use the modified file name
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+    }
+  };
 
   return (
     <div className={styles.app}>
@@ -100,7 +121,7 @@ function App() {
             <ImagePreview
               imageUrl={croppedUrl}
               downloadRef={downloadRef}
-              onDownload={() => downloadRef.current?.click()}
+              onDownload={handleDownload}
             />
           )}
         </div>
