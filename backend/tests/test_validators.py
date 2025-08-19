@@ -68,7 +68,9 @@ def test_sanitize_filename():
     assert validators.sanitize_filename("../../etc/passwd") == "passwd"
     assert validators.sanitize_filename("a" * 120 + ".jpg").startswith("a" * 95)
     assert validators.sanitize_filename("test file.jpg") == "test_file.jpg"
-    assert validators.sanitize_filename(".hidden")[:5] == "file_"
+    assert validators.sanitize_filename(".hidden")[:5] == "plik_"
+    assert validators.sanitize_filename("abcąężźćśń") == "abcaezzcsn"
+    assert validators.sanitize_filename("abc頱񝘹뎭ᘶښЀ꿓!𮽨񋰆왊ũ䔕ϼ񅉚䦎") == "abc_"
 
 def test_validate_session_id():
     assert validators.validate_session_id("abc-123-xyz") is True

@@ -11,6 +11,7 @@ from .config import config
 from .routes import register_routes
 from .services.image_service import image_service
 from .services.task_service import task_service
+from .utils.helpers import cleanup_filesystem
 
 def create_app():
     """Factory function do tworzenia aplikacji Flask"""
@@ -55,7 +56,7 @@ def setup_logging(app):
         # File handler
         file_handler = RotatingFileHandler(
             'logs/app.log', 
-            maxBytes=16 * 1024 * 1024,  # 16MB
+            maxBytes=25 * 1024 * 1024,  # 25MB
             backupCount=10
         )
         file_handler.setFormatter(logging.Formatter(
@@ -98,8 +99,11 @@ def cleanup_old_files():
             if removed_tasks > 0:
                 logging.info(f"Cleaned up {removed_tasks} old tasks")
             
-            # TODO: Cleanup old files from filesystem
-            
+            # Cleanup old files from filesystem
+            cleanup_filesystem(config.UPLOAD_FOLDER, config.MAX_FILE_AGE_HOURS)
+            cleanup_filesystem(config.OUTPUT_FOLDER, config.MAX_FILE_AGE_HOURS)
+            cleanup_filesystem(config.ERROR_FOLDER, config.MAX_FILE_AGE_HOURS)
+
             # Sleep for 1 hour
             time.sleep(3600)
             

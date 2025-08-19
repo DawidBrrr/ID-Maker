@@ -20,15 +20,15 @@ files_bp = Blueprint('files', __name__)
 @handle_errors
 def serve_output_file(session_id, filename):
     """Służy pliki wyjściowe"""
-    # Sanityzuj parametry
+    # Sanitize parameters
     session_id = sanitize_filename(session_id)
     filename = sanitize_filename(filename)
-    
-    # Sprawdź czy plik istnieje
+
+    # Check if file exists
     if not file_service.file_exists(session_id, filename, 'output'):
         return jsonify({"error": "File not found"}), 404
-    
-    # Pobierz ścieżkę do folderu output
+
+    # Get the path to the output folder
     _, output_folder, _ = file_service.get_user_folders(session_id)
     
     logger.info(f"Serving file {filename} from session {session_id}")

@@ -74,23 +74,35 @@ def validate_document_type(document_type: str) -> bool:
 
 def sanitize_filename(filename: str) -> str:
     """Sanityzuje nazwę pliku"""
-    # Usuń ścieżki
+    #Polish characters map
+    polish_char_map = {
+        'ą': 'a', 'ć': 'c', 'ę': 'e', 'ł': 'l', 'ń': 'n', 'ó': 'o', 'ś': 's', 'ź': 'z', 'ż': 'z',
+        'Ą': 'A', 'Ć': 'C', 'Ę': 'E', 'Ł': 'L', 'Ń': 'N', 'Ó': 'O', 'Ś': 'S', 'Ź': 'Z', 'Ż': 'Z'
+    }
+
+    # Remove paths
     filename = os.path.basename(filename)
-    
-    # Usuń niebezpieczne znaki, zostaw tylko alfanumeryczne, kropki, myślniki i podkreślenia
+
+    # Changing Polish characters into corresponding ASCII characters
+    filename = ''.join(polish_char_map.get(char, char) for char in filename)
+
+    #Remove all not ASCII characters
+    filename = filename.encode("ascii", "ignore").decode("ascii")
+
+    # Removing dangerous characters
     filename = re.sub(r'[^\w\-_\.]', '_', filename)
-    
-    # Usuń wielokrotne kropki (path traversal protection)
+
+    # Path traversal protection
     filename = re.sub(r'\.{2,}', '.', filename)
     
-    # Ogranicz długość
+    # Limit length
     if len(filename) > 100:
         name, ext = os.path.splitext(filename)
         filename = name[:95] + ext
-    
-    # Upewnij się że nie jest pusty
+
+    # Make sure it's not empty or hidden
     if not filename or filename.startswith('.'):
-        filename = f"file_{uuid.uuid4().hex[:8]}" + (os.path.splitext(filename)[1] if '.' in filename else '.jpg')
+        filename = f"plik_{uuid.uuid4().hex[:8]}" + (os.path.splitext(filename)[1] if '.' in filename else '.jpg')
     
     return filename
 

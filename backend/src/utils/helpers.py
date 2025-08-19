@@ -1,6 +1,9 @@
 import os
 import shutil
+import logging
+import time
 
+logger = logging.getLogger(__name__)
 
 def clear_client_data(upload_folder, output_folder, error_folder):
     """
@@ -16,9 +19,38 @@ def clear_client_data(upload_folder, output_folder, error_folder):
                     elif os.path.isdir(file_path):
                         shutil.rmtree(file_path)
                 except Exception as e:
-                    print(f'Failed to delete {file_path}. Reason: {e}')
+                    logger.error(f"Failed to delete {file_path}. Reason: {e}")
             # Usuń pusty folder po wszystkim
             try:
                 os.rmdir(folder)
             except Exception:
-                pass
+                logger.warning(f"Failed to remove empty folder: {folder}")
+
+
+def cleanup_filesystem(folder: str, max_age_hours: int):
+    """Removes old files and empty folders"""
+    now = time.time()
+    max_age_seconds = max_age_hours * 3600
+    
+
+    for root, dirs, files in os.walk(folder):
+        for filename in files:
+            file_path = os.path.join(root, filename)
+            try:
+                # Check age of the file
+                file_age = now - os.path.getmtime(file_path)
+                if file_age > max_age_seconds:
+                    os.remove(file_path)
+                    logger.info(f"Removed old file: {file_path}")
+            except Exception as e:
+                logger.error(f"Error removing file {file_path}: {e}")
+
+        for dir_name in dirs:
+            dir_path = os.path.join(root, dir_name)
+            try:
+                # Remove empty directories
+                if not os.listdir(dir_path):
+                    os.rmdir(dir_path)
+                    logger.info(f"Removed empty directory: {dir_path}")
+            except Exception as e:
+                logger.error(f"Error removing directory {dir_path}: {e}")

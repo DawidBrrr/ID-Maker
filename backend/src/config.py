@@ -15,9 +15,10 @@ class Config:
     ERROR_FOLDER = os.path.join(DATA_FOLDER, 'errors')
     
     # Limity
-    MAX_CONTENT_LENGTH: int = 16 * 1024 * 1024  # 16MB
+    MAX_CONTENT_LENGTH: int = 25 * 1024 * 1024  # 25MB
     MAX_FILES_PER_SESSION: int = 10
     SESSION_TIMEOUT_HOURS: int = 24
+    MAX_FILE_AGE_HOURS: int = 12
     
     # Threading
     MAX_WORKERS: int = int(os.getenv('MAX_WORKERS', '4'))

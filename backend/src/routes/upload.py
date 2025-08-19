@@ -38,7 +38,7 @@ def upload_file():
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
     
-    try:
+    try: 
         # Zapisz plik
         filepath = file_service.save_uploaded_file(file, session_id)
         logger.info(f"File saved: {filepath}")

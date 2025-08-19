@@ -31,10 +31,10 @@ export default function FileUpload({
       return;
     }
 
-    // Check file size max 10MB
-    const maxSize = 16 * 1024 * 1024;
+    // Check file size max 25MB
+    const maxSize = 25 * 1024 * 1024;
     if (file.size > maxSize) {
-      setUploadResponse("Plik jest za duży (maksymalnie 16MB).");
+      setUploadResponse("Plik jest za duży (maksymalnie 25MB).");
       return;
     }
 
@@ -92,7 +92,7 @@ export default function FileUpload({
       </button>
       
       <p className={styles.uploadHint}>
-        Obsługiwane formaty: JPG, PNG, WEBP • Maksymalny rozmiar: 10MB
+        Obsługiwane formaty: JPG, PNG, WEBP • Maksymalny rozmiar: 25MB
       </p>
     </div>
   );
