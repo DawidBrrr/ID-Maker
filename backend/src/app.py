@@ -48,25 +48,29 @@ def create_app():
 
 def setup_logging(app):
     """Konfiguruje logging"""
-    if not app.debug:
-        # Ensure logs directory exists
-        if not os.path.exists('logs'):
-            os.mkdir('logs')
-        
-        # File handler
-        file_handler = RotatingFileHandler(
-            'logs/app.log', 
-            maxBytes=25 * 1024 * 1024,  # 25MB
-            backupCount=10
-        )
-        file_handler.setFormatter(logging.Formatter(
-            '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
-        ))
-        file_handler.setLevel(logging.INFO)
-        app.logger.addHandler(file_handler)
-        
-        app.logger.setLevel(logging.INFO)
-        app.logger.info('Application startup')
+    # Ensure logs directory exists
+    if not os.path.exists('logs'):
+        os.mkdir('logs')
+    
+    # File handler
+    file_handler = RotatingFileHandler(
+        'logs/app.log', 
+        maxBytes=25 * 1024 * 1024,  # 25MB
+        backupCount=10
+    )
+    file_handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+    ))
+    file_handler.setLevel(logging.INFO)
+    
+    # Configure root logger to handle all loggers
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+    root_logger.addHandler(file_handler)
+    
+    # Also configure app logger
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(logging.INFO)
 
 def register_error_handlers(app):
     """Rejestruje error handlers"""

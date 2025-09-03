@@ -13,13 +13,6 @@ logger = logging.getLogger(__name__)
 
 upload_bp = Blueprint('upload', __name__)
 
-@upload_bp.route('/hello')
-@rate_limit(max_requests=30, window_minutes=1)
-@log_request
-@handle_errors
-def hello():
-    return jsonify({"message": "Skadruj portret!"})
-
 @upload_bp.route('/upload', methods=['POST'])
 @rate_limit(max_requests=10, window_minutes=1)
 @log_request

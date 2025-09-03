@@ -43,7 +43,7 @@ def rate_limit(max_requests: int = None, window_minutes: int = 1):
                 if len(rate_limit_storage[client_ip]) >= max_requests:
                     logger.warning(f"Rate limit exceeded for IP: {client_ip}")
                     return jsonify({
-                        'error': 'Rate limit exceeded',
+                        'error': 'Zbyt dużo zapytań',
                         'retry_after': int(window_minutes * 60),
                         'max_requests': max_requests,
                         'window_minutes': window_minutes

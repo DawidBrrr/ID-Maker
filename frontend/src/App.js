@@ -4,7 +4,7 @@ import FileUpload from "./components/FileUpload";
 import ImagePreview from "./components/ImagePreview";
 import Message from "./components/Message";
 import DocumentTypeSelector from "./components/DocumentTypeSelector";
-import { fetchHello, clearSession, pollStatus } from "./utils/api";
+import { clearSession, pollStatus } from "./utils/api";
 
 function App() {
   const [message, setMessage] = useState("Ładowanie...");
@@ -16,12 +16,6 @@ function App() {
   const downloadRef = useRef(null);
 
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-
-  useEffect(() => {
-    fetchHello()
-      .then((data) => setMessage(data.message))
-      .catch(() => setMessage("Problem z pobraniem danych"));
-  }, []);
 
   const startPolling = (taskId, sessionId) => {
     const interval = setInterval(() => {
