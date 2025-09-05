@@ -5,10 +5,14 @@ from datetime import datetime
 
 from ..config import config
 from ..services.task_service import task_service
+from ..utils.decorators import rate_limit, log_request, handle_errors
 
 health_bp = Blueprint('health', __name__)
 
 @health_bp.route('/health')
+@rate_limit(max_requests=60, window_minutes=1)
+@log_request
+@handle_errors
 def health_check():
     """Health check endpoint"""
     try:
@@ -41,6 +45,9 @@ def health_check():
         }), 503
 
 @health_bp.route('/metrics')
+@rate_limit(max_requests=60, window_minutes=1)
+@log_request
+@handle_errors
 def metrics():
     """Endpoint z metrykami"""
     try:

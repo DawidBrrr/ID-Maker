@@ -5,7 +5,8 @@ from typing import Set
 @dataclass
 class Config:
     # Basic configuration
-    DEBUG: bool = os.getenv('DEBUG', 'False').lower() == 'true'
+    #Change to False in production
+    DEBUG: bool = True
     
     # Folders
     BASE_DIR: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
