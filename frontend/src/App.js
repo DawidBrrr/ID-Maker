@@ -4,10 +4,12 @@ import FileUpload from "./components/FileUpload";
 import ImagePreview from "./components/ImagePreview";
 import Message from "./components/Message";
 import DocumentTypeSelector from "./components/DocumentTypeSelector";
+import PrivacyPage from "./components/PrivacyPage";
+import AboutPage from "./components/AboutPage";
 import { clearSession, pollStatus } from "./utils/api";
 
 function App() {
-  const [message, setMessage] = useState("Ładowanie...");
+  const [currentPage, setCurrentPage] = useState("main");
   const [uploadResponse, setUploadResponse] = useState("");
   const [croppedUrl, setCroppedUrl] = useState("");
   const [isUploading, setIsUploading] = useState(false);
@@ -80,45 +82,60 @@ function App() {
 
   return (
     <div className={styles.app}>
+      <nav className={styles.navbar}>
+        <div className={styles.navbarBrand}>
+          <button className={styles.brandButton} onClick={() => setCurrentPage("main")}>
+            Kaidr
+          </button>
+        </div>
+        <div className={styles.navbarLinks}>
+          <button className={styles.navLink} onClick={() => setCurrentPage("privacy")}>
+            Polityka Prywatności
+          </button>
+          <button className={styles.navLink} onClick={() => setCurrentPage("about")}>
+            O stronie
+          </button>
+        </div>
+      </nav>
       <div className={styles.container}>
-        <div className={styles.header}>
-          <div className={styles.iconWrapper}>
-            <svg className={styles.icon} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M21 19V5C21 3.9 20.1 3 19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <circle cx="8.5" cy="8.5" r="1.5" stroke="currentColor" strokeWidth="2"/>
-              <path d="M21 15L16 10L5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <h1 className={styles.title}>Przycinanie Zdjęć Dokumentów</h1>
-          <p className={styles.subtitle}>Automatyczne kadrowanie zdjęć do paszportu i dowodu osobistego</p>
-        </div>
+        {currentPage === "main" && (
+          <>
+            <div className={styles.header}>
+              <h1 className={styles.title}>Przerabianie Zdjęć Do Dokumentów</h1>
+              <p className={styles.subtitle}>Automatyczne kadrowanie i poprawianie zdjęć do paszportu i dowodu osobistego</p>
+            </div>
 
-        <div className={styles.content}>
-          <DocumentTypeSelector 
-            documentType={documentType}
-            setDocumentType={setDocumentType}
-          />
-          
-          <FileUpload
-            onUploadComplete={handleUpload}
-            setIsUploading={setIsUploading}
-            isUploading={isUploading}
-            setUploadResponse={setUploadResponse}
-            setCroppedUrl={setCroppedUrl}
-            sessionId={sessionId}
-            documentType={documentType}
-          />
-          
-          <Message message={uploadResponse} />
-          
-          {croppedUrl && (
-            <ImagePreview
-              imageUrl={croppedUrl}
-              downloadRef={downloadRef}
-              onDownload={handleDownload}
-            />
-          )}
-        </div>
+            <div className={styles.content}>
+              <DocumentTypeSelector 
+                documentType={documentType}
+                setDocumentType={setDocumentType}
+              />
+              
+              <FileUpload
+                onUploadComplete={handleUpload}
+                setIsUploading={setIsUploading}
+                isUploading={isUploading}
+                setUploadResponse={setUploadResponse}
+                setCroppedUrl={setCroppedUrl}
+                sessionId={sessionId}
+                documentType={documentType}
+              />
+              
+              <Message message={uploadResponse} />
+              
+              {croppedUrl && (
+                <ImagePreview
+                  imageUrl={croppedUrl}
+                  downloadRef={downloadRef}
+                  onDownload={handleDownload}
+                />
+              )}
+            </div>
+          </>
+        )}
+        
+        {currentPage === "privacy" && <PrivacyPage />}
+        {currentPage === "about" && <AboutPage />}
       </div>
     </div>
   );
