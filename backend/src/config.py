@@ -41,16 +41,22 @@ class Config:
         "passport": {
             "res_x": 768,
             "res_y": 1004,
-            "top_margin_value": 0.3,
-            "bottom_margin_value": 0.4,
+            "top_margin_value": 0.4,
+            "bottom_margin_value": 0.3,
             "left_right_margin_value": 0,
+            "horizontal_padding": 0.25,
+            "vertical_padding": 0.25,
+            "dpi": (600, 600),
         },
         "id_card": {
             "res_x": 492,
             "res_y": 633,
-            "top_margin_value": 0.3,
-            "bottom_margin_value": 0.4,
+            "top_margin_value": 0.4,
+            "bottom_margin_value": 0.3,
             "left_right_margin_value": 0,
+            "horizontal_padding": 0.25,
+            "vertical_padding": 0.25,
+            "dpi": (600, 600),
         }
     })
     

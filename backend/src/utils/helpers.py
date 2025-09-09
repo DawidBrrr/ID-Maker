@@ -2,6 +2,7 @@ import os
 import shutil
 import logging
 import time
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -54,3 +55,8 @@ def cleanup_filesystem(folder: str, max_age_hours: int):
                     logger.info(f"Removed empty directory: {dir_path}")
             except Exception as e:
                 logger.error(f"Error removing directory {dir_path}: {e}")
+
+
+def get_filename_from_path(path: str) -> str:
+    """Return the filename from a given file path."""
+    return Path(path).name
