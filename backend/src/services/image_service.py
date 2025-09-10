@@ -2,7 +2,7 @@ import logging
 from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, Any
 
-from ..FastCropper.image_processing import process_image
+from ..IdMaker.id_maker import id_maker
 from ..config import config
 from ..models.task import Task, TaskStatus
 from ..services.task_service import task_service
@@ -37,25 +37,13 @@ class ImageProcessingService:
             
             logger.info(f"Starting image processing for task {task_id}")
             
-            # Przetwarzaj obraz używając FastCropper
-            process_image(
-                image_path=filepath,
-                error_folder=error_folder,
-                output_folder=output_folder,
-                debug_output=error_folder,
-                res_x=params['res_x'],
-                res_y=params['res_y'],
-                top_margin_value=params['top_margin_value'],
-                bottom_margin_value=params['bottom_margin_value'],
-                left_right_margin_value=params['left_right_margin_value'],
-                naming_config={
-                    "prefix": "", 
-                    "name": "", 
-                    "numbering_type": "", 
-                    "extension": "Bez zmian"
-                },
-                image_count=1
-            )
+            # Przetwarzaj obraz 
+            
+            processor = id_maker(upload_path=filepath,
+                                 error_folder=error_folder,
+                                output_folder=output_folder,
+                                params=params)
+            processor.process_image()
             
             # Znajdź najnowszy plik wyjściowy
             output_filename = file_service.get_latest_output_file(session_id)

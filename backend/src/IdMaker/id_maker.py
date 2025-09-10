@@ -27,6 +27,7 @@ class id_maker:
         self.image_name = get_filename_from_path(upload_path)
         self.processed_image_path = os.path.join(self.output_folder,self.image_name)
         self.params = params
+        self.biometric_info = ""
 
     def process_image(self):
         """
@@ -66,9 +67,9 @@ class id_maker:
         """
         Check image for biometric compliance and log warnings for any issues.
         This function performs validation but doesn't stop processing.
+        Sets self.biometric_info for frontend display.
         """
         try:
-            # Try to create BiometricPassportPhoto with all validations enabled
             biometric_photo = BiometricPassportPhoto.from_file(
                 self.upload_path,
                 forbid_abnormally_open_eyelid=True,
@@ -78,25 +79,46 @@ class id_maker:
                 forbid_unevenly_open_eye=True
             )
             logger.info("Image passed all biometric validation checks")
-            
+            self.biometric_info = "Image passed all biometric validation checks"
         except NoFaceDetectedException as e:
-            logger.warning(f"Biometric check warning: No face detected in the image - {e}")
+            msg = f"Biometric check warning: No face detected in the image - {e}"
+            logger.warning(msg)
+            self.biometric_info = msg
         except MultipleFacesDetectedException as e:
-            logger.warning(f"Biometric check warning: Multiple faces detected in the image - {e}")
+            msg = f"Biometric check warning: Multiple faces detected in the image - {e}"
+            logger.warning(msg)
+            self.biometric_info = msg
         except MissingFaceFeaturesException as e:
-            logger.warning(f"Biometric check warning: Missing facial features detected - {e}")
+            msg = f"Biometric check warning: Missing facial features detected - {e}"
+            logger.warning(msg)
+            self.biometric_info = msg
         except ObliqueFacePoseException as e:
-            logger.warning(f"Biometric check warning: Face is not straight/oblique pose detected - {e}")
+            msg = f"Biometric check warning: Face is not straight/oblique pose detected - {e}"
+            logger.warning(msg)
+            self.biometric_info = msg
         except OpenedMouthOrSmileException as e:
-            logger.warning(f"Biometric check warning: Mouth is open or smiling - {e}")
+            msg = f"Biometric check warning: Mouth is open or smiling - {e}"
+            logger.warning(msg)
+            self.biometric_info = msg
         except AbnormalEyelidOpeningStateException as e:
-            logger.warning(f"Biometric check warning: Abnormal eyelid opening state - {e}")
+            msg = f"Biometric check warning: Abnormal eyelid opening state - {e}"
+            logger.warning(msg)
+            self.biometric_info = msg
         except UnevenlyOpenEyelidException as e:
-            logger.warning(f"Biometric check warning: Eyes are unevenly open - {e}")
+            msg = f"Biometric check warning: Eyes are unevenly open - {e}"
+            logger.warning(msg)
+            self.biometric_info = msg
         except BiometricPassportPhotoException as e:
-            logger.warning(f"Biometric check warning: General biometric validation issue - {e}")
+            msg = f"Biometric check warning: General biometric validation issue - {e}"
+            logger.warning(msg)
+            self.biometric_info = msg
         except Exception as e:
-            logger.warning(f"Biometric check warning: Unexpected error during validation - {e}")
+            msg = f"Biometric check warning: Unexpected error during validation - {e}"
+            logger.warning(msg)
+            self.biometric_info = msg
+    def get_biometric_info(self):
+        """Return the biometric validation info string for frontend display."""
+        return self.biometric_info
 
     def change_background(self):
         processed_image = Image.open(self.processed_image_path)
@@ -111,7 +133,7 @@ class id_maker:
             alpha_matting_erode_size=5
         )
         # Change transparent background to white
-        white_bg = Image.new("RGBA", no_bg_image.size, (255, 255, 255))
+        white_bg = Image.new("RGB", no_bg_image.size, (255, 255, 255))
         white_bg.paste(no_bg_image, mask=no_bg_image.split()[3] if len(no_bg_image.split()) > 3 else None)
 
         # Save final image

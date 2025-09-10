@@ -5,7 +5,9 @@ from datetime import datetime
 import numpy as np
 from . import variable
 
-
+"""
+DEPRECATED - Use id_maker.py instead
+"""
 
 def process_image(image_path,
                   error_folder,
