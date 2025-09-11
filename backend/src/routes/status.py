@@ -19,7 +19,9 @@ def check_status(task_id):
     # Add URL to the file if ready
     if task.result_file:
         response_data['cropped_file_url'] = f"/api/output/{task.session_id}/{task.result_file}"
-        response_data['status'] = "done"
+        response_data['status'] = "completed"  # Changed from "done" to match frontend expectation
+    elif task.status.value == "failed":
+        response_data['status'] = "failed"
     else:
         response_data['status'] = "processing"
 
@@ -40,7 +42,9 @@ def get_session_tasks(session_id):
             task_data = task.to_dict()
             if task.result_file:
                 task_data['cropped_file_url'] = f"/api/output/{task.session_id}/{task.result_file}"
-                task_data['status'] = "done"
+                task_data['status'] = "completed"
+            elif task.status.value == "failed":
+                task_data['status'] = "failed"
             else:
                 task_data['status'] = "processing"
             tasks_data.append(task_data)

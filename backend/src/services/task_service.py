@@ -31,14 +31,16 @@ class TaskService:
     
     def update_task_status(self, task_id: str, status: TaskStatus, 
                           error_message: Optional[str] = None, 
-                          result_file: Optional[str] = None) -> bool:
+                          result_file: Optional[str] = None,
+                          biometric_warnings: Optional[list] = None,
+                          biometric_errors: Optional[list] = None) -> bool:
         """Aktualizuje status taska"""
         with self.lock:
             task = self.tasks.get(task_id)
             if not task:
                 return False
             
-            task.update_status(status, error_message)
+            task.update_status(status, error_message, biometric_warnings, biometric_errors)
             if result_file:
                 task.result_file = result_file
             

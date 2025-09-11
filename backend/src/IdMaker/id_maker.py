@@ -28,15 +28,22 @@ class id_maker:
         self.processed_image_path = os.path.join(self.output_folder,self.image_name)
         self.params = params
         self.biometric_info = ""
+        self.cropping_successful = False
 
     def process_image(self):
         """
         Main method to process the image through all steps: cropping, checking, background change, and DPI adjustment.
         """
         self.crop_image()
-        self.check_image()
-        self.change_background()
-        self.change_dpi()
+        
+        # Only proceed with further processing if cropping was successful
+        if self.cropping_successful:
+            self.check_image()
+            self.change_background()
+            self.change_dpi()
+        else:
+            # Still run check_image to get biometric info even if cropping failed
+            self.check_image()
 
 
     def crop_image(self):
@@ -59,9 +66,12 @@ class id_maker:
                 vertical_padding=self.params['vertical_padding']
             )
             cropped_photo.save(self.processed_image_path)
+            self.cropping_successful = True
             logger.info(f"Image successfully cropped and saved to {self.processed_image_path}")
         except Exception as e:
+            self.cropping_successful = False
             logger.error(f"Error processing image: {e}")
+            # Don't re-raise the exception, just log it and set the flag
 
     def check_image(self):
         """
@@ -79,41 +89,41 @@ class id_maker:
                 forbid_unevenly_open_eye=True
             )
             logger.info("Image passed all biometric validation checks")
-            self.biometric_info = "Image passed all biometric validation checks"
+            self.biometric_info = "Zdjęcie przeszło wszystkie kontrole biometryczne"
         except NoFaceDetectedException as e:
-            msg = f"Biometric check warning: No face detected in the image - {e}"
+            msg = f"Ostrzeżenie kontroli biometrycznej: Nie wykryto twarzy na zdjęciu"
             logger.warning(msg)
             self.biometric_info = msg
         except MultipleFacesDetectedException as e:
-            msg = f"Biometric check warning: Multiple faces detected in the image - {e}"
+            msg = f"Ostrzeżenie kontroli biometrycznej: Wykryto wiele twarzy na zdjęciu"
             logger.warning(msg)
             self.biometric_info = msg
         except MissingFaceFeaturesException as e:
-            msg = f"Biometric check warning: Missing facial features detected - {e}"
+            msg = f"Ostrzeżenie kontroli biometrycznej: Brakujące cechy twarzy"
             logger.warning(msg)
             self.biometric_info = msg
         except ObliqueFacePoseException as e:
-            msg = f"Biometric check warning: Face is not straight/oblique pose detected - {e}"
+            msg = f"Ostrzeżenie kontroli biometrycznej: Twarz nie jest skierowana prosto/ukośna poza wykryta"
             logger.warning(msg)
             self.biometric_info = msg
         except OpenedMouthOrSmileException as e:
-            msg = f"Biometric check warning: Mouth is open or smiling - {e}"
+            msg = f"Ostrzeżenie kontroli biometrycznej: Usta są otwarte lub wykryto uśmiech"
             logger.warning(msg)
             self.biometric_info = msg
         except AbnormalEyelidOpeningStateException as e:
-            msg = f"Biometric check warning: Abnormal eyelid opening state - {e}"
+            msg = f"Ostrzeżenie kontroli biometrycznej: Nienormalny stan otwarcia powiek"
             logger.warning(msg)
             self.biometric_info = msg
         except UnevenlyOpenEyelidException as e:
-            msg = f"Biometric check warning: Eyes are unevenly open - {e}"
+            msg = f"Ostrzeżenie kontroli biometrycznej: Oczy są nierówno otwarte"
             logger.warning(msg)
             self.biometric_info = msg
         except BiometricPassportPhotoException as e:
-            msg = f"Biometric check warning: General biometric validation issue - {e}"
+            msg = f"Ostrzeżenie kontroli biometrycznej: Ogólny problem z walidacją biometryczną"
             logger.warning(msg)
             self.biometric_info = msg
         except Exception as e:
-            msg = f"Biometric check warning: Unexpected error during validation - {e}"
+            msg = f"Ostrzeżenie kontroli biometrycznej: Nieoczekiwany błąd podczas walidacji"
             logger.warning(msg)
             self.biometric_info = msg
     def get_biometric_info(self):
@@ -121,26 +131,39 @@ class id_maker:
         return self.biometric_info
 
     def change_background(self):
-        processed_image = Image.open(self.processed_image_path)
+        """Change background to white using rembg"""
+        if not os.path.exists(self.processed_image_path):
+            logger.warning(f"Cannot change background: file {self.processed_image_path} does not exist")
+            return
+            
+        try:
+            processed_image = Image.open(self.processed_image_path)
 
-        # Change background to white with rembg force CPU
-        no_bg_image = remove(
-            processed_image,
-            providers=['CPUExecutionProvider'],
-            alpha_matting=True,
-            alpha_matting_foreground_threshold=250,
-            alpha_matting_background_threshold=5,
-            alpha_matting_erode_size=5
-        )
-        # Change transparent background to white
-        white_bg = Image.new("RGB", no_bg_image.size, (255, 255, 255))
-        white_bg.paste(no_bg_image, mask=no_bg_image.split()[3] if len(no_bg_image.split()) > 3 else None)
+            # Change background to white with rembg force CPU
+            no_bg_image = remove(
+                processed_image,
+                providers=['CPUExecutionProvider'],
+                alpha_matting=True,
+                alpha_matting_foreground_threshold=250,
+                alpha_matting_background_threshold=5,
+                alpha_matting_erode_size=5
+            )
+            # Change transparent background to white
+            white_bg = Image.new("RGB", no_bg_image.size, (255, 255, 255))
+            white_bg.paste(no_bg_image, mask=no_bg_image.split()[3] if len(no_bg_image.split()) > 3 else None)
 
-        # Save final image
-        white_bg.save(self.processed_image_path)
-        logger.info(f"Background changed to white and saved to {self.processed_image_path}")
+            # Save final image
+            white_bg.save(self.processed_image_path)
+            logger.info(f"Background changed to white and saved to {self.processed_image_path}")
+        except Exception as e:
+            logger.error(f"Error changing background: {e}")
 
     def change_dpi(self):
+        """Change the DPI of the processed image"""
+        if not os.path.exists(self.processed_image_path):
+            logger.warning(f"Cannot change DPI: file {self.processed_image_path} does not exist")
+            return
+            
         try:
             with Image.open(self.processed_image_path) as img:
                 img.save(self.processed_image_path, dpi=self.params['dpi'])

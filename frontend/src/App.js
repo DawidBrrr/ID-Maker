@@ -15,37 +15,68 @@ function App() {
   const [isUploading, setIsUploading] = useState(false);
   const [sessionId, setSessionId] = useState(localStorage.getItem("session_id") || "");
   const [documentType, setDocumentType] = useState("id_card"); // domyślnie dowód osobisty
+  const [biometricWarnings, setBiometricWarnings] = useState([]);
+  const [biometricErrors, setBiometricErrors] = useState([]);
   const downloadRef = useRef(null);
 
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 
+  // Utility function to construct URLs properly
+  const constructUrl = (baseUrl, path) => {
+    if (!baseUrl || !path) return "";
+    const cleanBase = baseUrl.replace(/\/$/, ""); // Remove trailing slash
+    const cleanPath = path.startsWith("/") ? path : `/${path}`; // Ensure leading slash
+    return `${cleanBase}${cleanPath}`;
+  };
+
   const startPolling = (taskId, sessionId) => {
     const interval = setInterval(() => {
       pollStatus(taskId).then((data) => {
-        if (data.status === "done") {
+        if (data.status === "completed") {
           clearInterval(interval);
           setUploadResponse("Przetwarzanie zakończone pomyślnie!");
-          setCroppedUrl(`${BACKEND_URL}${data.cropped_file_url}`);
-        } else if (data.status === "error") {
+          // Use the full URL provided by backend
+          if (data.cropped_file_url) {
+            setCroppedUrl(constructUrl(BACKEND_URL, data.cropped_file_url));
+          }
+
+          // Handle biometric information
+          if (data.biometric_warnings && data.biometric_warnings.length > 0) {
+            setBiometricWarnings(data.biometric_warnings);
+          }
+          if (data.biometric_errors && data.biometric_errors.length > 0) {
+            setBiometricErrors(data.biometric_errors);
+          }
+        } else if (data.status === "failed") {
           clearInterval(interval);
-          setUploadResponse(`Error: ${data.message}`);
+          setUploadResponse(`Błąd: ${data.error_message || "Wystąpił błąd podczas przetwarzania"}`);
+
+          // Handle biometric errors in failed status
+          if (data.biometric_errors && data.biometric_errors.length > 0) {
+            setBiometricErrors(data.biometric_errors);
+          }
         }
       });
     }, 1000);
   };
 
   const handleUpload = (data, formData) => {
+    // Reset previous states
+    setBiometricWarnings([]);
+    setBiometricErrors([]);
+    setCroppedUrl("");
+
     if (data.session_id) {
       setSessionId(data.session_id);
       localStorage.setItem("session_id", data.session_id);
       startPolling(data.task_id, data.session_id);
     }
     if (data.error) {
-      setUploadResponse(`Error: ${data.error}`);
+      setUploadResponse(`Błąd: ${data.error}`);
     } else {
       setUploadResponse(data.message);
       if (data.cropped_file_url) {
-        const imageUrl = `${BACKEND_URL}${data.cropped_file_url}`;
+        const imageUrl = constructUrl(BACKEND_URL, data.cropped_file_url);
         setCroppedUrl(imageUrl);
       }
     }
@@ -60,23 +91,34 @@ function App() {
   }, [sessionId]);
   const handleDownload = async () => {
     try {
+      if (!croppedUrl) {
+        throw new Error("No image URL available for download");
+      }
+
       const response = await fetch(croppedUrl);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch image: ${response.status} ${response.statusText}`);
+      }
+
       const blob = await response.blob();
 
       // Extract the original file name from the URL
-      const originalFileName = croppedUrl.split("/").pop();
-      const fileName = originalFileName.replace(/(\.[^.]*)$/, "-skadrowane$1"); // Append '-skadrowane' before the extension
+      const urlParts = croppedUrl.split("/");
+      const originalFileName = urlParts[urlParts.length - 1] || "downloaded-image.jpg";
+      const fileName = originalFileName.replace(/(\.[^.]*)$/, "-skadrowane$1");
 
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = fileName; // Use the modified file name
+      a.download = fileName;
       document.body.appendChild(a);
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error downloading file:", error);
+      setUploadResponse(`Błąd pobierania: ${error.message}`);
     }
   };
 
@@ -121,7 +163,17 @@ function App() {
                 documentType={documentType}
               />
               
-              <Message message={uploadResponse} />
+              <Message message={uploadResponse} type="auto" />
+              
+              {/* Display biometric errors */}
+              {biometricErrors.map((error, index) => (
+                <Message key={`error-${index}`} message={error} type="auto" />
+              ))}
+              
+              {/* Display biometric warnings */}
+              {biometricWarnings.map((warning, index) => (
+                <Message key={`warning-${index}`} message={warning} type="auto" />
+              ))}
               
               {croppedUrl && (
                 <ImagePreview

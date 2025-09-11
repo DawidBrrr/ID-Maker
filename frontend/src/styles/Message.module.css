@@ -53,6 +53,20 @@
   box-shadow: 0 4px 15px rgba(22, 163, 74, 0.1);
 }
 
+.warning {
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  color: #d97706;
+  border-color: #fcd34d;
+  box-shadow: 0 4px 15px rgba(217, 119, 6, 0.1);
+}
+
+.info {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  color: #2563eb;
+  border-color: #93c5fd;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.1);
+}
+
 @media (max-width: 768px) {
   .message {
     margin: 20px 16px;

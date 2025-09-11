@@ -45,25 +45,60 @@ class ImageProcessingService:
                                 params=params)
             processor.process_image()
             
+            # Pobierz informacje biometryczne
+            biometric_info = processor.get_biometric_info()
+            
+            # Sprawdź czy kadrowanie się udało
+            cropping_successful = getattr(processor, 'cropping_successful', False)
+            
+            # Kategoryzuj informacje biometryczne
+            error_messages = []
+            warning_messages = []
+            
+            if biometric_info:
+                # Sprawdź czy to jest błąd krytyczny czy ostrzeżenie
+                if any(keyword in biometric_info.lower() for keyword in [
+                    "nie wykryto twarzy", 
+                    "wykryto wiele twarzy", 
+                    "brakujące cechy twarzy"
+                ]):
+                    error_messages.append(biometric_info)
+                else:
+                    warning_messages.append(biometric_info)
+            
             # Znajdź najnowszy plik wyjściowy
             output_filename = file_service.get_latest_output_file(session_id)
             
-            if output_filename:
-                # Sukces
+            if output_filename and cropping_successful:
+                # Sukces - plik istnieje i kadrowanie się udało
                 task_service.update_task_status(
                     task_id, 
                     TaskStatus.COMPLETED, 
-                    result_file=output_filename
+                    result_file=output_filename,
+                    biometric_warnings=warning_messages if warning_messages else None,
+                    biometric_errors=error_messages if error_messages else None
                 )
                 logger.info(f"Image processing completed for task {task_id}")
             else:
-                # Brak pliku wyjściowego
+                # Błąd - brak pliku wyjściowego lub nieudane kadrowanie
+                error_msg = "Nie udało się przetworzyć zdjęcia"
+                if not cropping_successful:
+                    error_msg += " - błąd podczas kadrowania"
+                elif not output_filename:
+                    error_msg += " - nie znaleziono pliku wyjściowego"
+                
+                # Dodaj informacje biometryczne do błędu jeśli istnieją
+                if error_messages:
+                    error_msg += f". {error_messages[0]}"
+                
                 task_service.update_task_status(
                     task_id, 
                     TaskStatus.FAILED, 
-                    error_message="Nie znaleziono pliku wyjściowego"
+                    error_message=error_msg,
+                    biometric_warnings=warning_messages if warning_messages else None,
+                    biometric_errors=error_messages if error_messages else None
                 )
-                logger.error(f"No output file found for task {task_id}")
+                logger.error(f"Image processing failed for task {task_id}: {error_msg}")
                 
         except Exception as e:
             error_msg = str(e)

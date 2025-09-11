@@ -23,8 +23,11 @@ class Task:
         self.processing_time: Optional[float] = None
         self.started_at: Optional[datetime] = None
         self.completed_at: Optional[datetime] = None
+        self.biometric_warnings: Optional[list] = None
+        self.biometric_errors: Optional[list] = None
     
-    def update_status(self, status: TaskStatus, error_message: Optional[str] = None):
+    def update_status(self, status: TaskStatus, error_message: Optional[str] = None, 
+                     biometric_warnings: Optional[list] = None, biometric_errors: Optional[list] = None):
         """Aktualizuje status taska"""
         old_status = self.status
         self.status = status
@@ -32,6 +35,12 @@ class Task:
         
         if error_message:
             self.error_message = error_message
+            
+        if biometric_warnings:
+            self.biometric_warnings = biometric_warnings
+            
+        if biometric_errors:
+            self.biometric_errors = biometric_errors
         
         # Śledzenie czasów
         if status == TaskStatus.PROCESSING and old_status == TaskStatus.PENDING:
@@ -54,7 +63,9 @@ class Task:
             "completed_at": self.completed_at.isoformat() if self.completed_at else None,
             "processing_time": self.processing_time,
             "result_file": self.result_file,
-            "error_message": self.error_message
+            "error_message": self.error_message,
+            "biometric_warnings": self.biometric_warnings,
+            "biometric_errors": self.biometric_errors
         }
     
     def __repr__(self):
