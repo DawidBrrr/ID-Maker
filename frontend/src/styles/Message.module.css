@@ -1,0 +1,77 @@
+.message {
+  font-weight: 500;
+  padding: 16px 24px;
+  margin: 24px auto;
+  max-width: 500px;
+  border-radius: 12px;
+  font-size: 1rem;
+  text-align: center;
+  border: 1px solid;
+  backdrop-filter: blur(10px);
+  animation: slideInMessage 0.4s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes slideInMessage {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.message::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease;
+}
+
+.message:hover::before {
+  left: 100%;
+}
+
+.error {
+  background: linear-gradient(135deg, #fef2f2, #fde8e8);
+  color: #dc2626;
+  border-color: #fca5a5;
+  box-shadow: 0 4px 15px rgba(220, 38, 38, 0.1);
+}
+
+.success {
+  background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+  color: #16a34a;
+  border-color: #86efac;
+  box-shadow: 0 4px 15px rgba(22, 163, 74, 0.1);
+}
+
+.warning {
+  background: linear-gradient(135deg, #fffbeb, #fef3c7);
+  color: #d97706;
+  border-color: #fcd34d;
+  box-shadow: 0 4px 15px rgba(217, 119, 6, 0.1);
+}
+
+.info {
+  background: linear-gradient(135deg, #eff6ff, #dbeafe);
+  color: #2563eb;
+  border-color: #93c5fd;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.1);
+}
+
+@media (max-width: 768px) {
+  .message {
+    margin: 20px 16px;
+    padding: 14px 20px;
+    font-size: 0.95rem;
+    border-radius: 10px;
+  }
+}

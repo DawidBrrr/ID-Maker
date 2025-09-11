@@ -3,19 +3,10 @@ import os
 from tqdm import tqdm
 from datetime import datetime
 import numpy as np
-from FastCropper import variable
-from utils import *
+from . import variable
 
-
-#TODO Redo images_error without win32
 """
-def images_error(image_path, error_folder):
-    shell = win32com.client.Dispatch("WScript.Shell")
-    filename_shortcut = os.path.basename(image_path)
-    shortcut_path = os.path.join(error_folder, filename_shortcut + ".lnk")
-    shortcut = shell.CreateShortcut(shortcut_path)
-    shortcut.TargetPath = os.path.abspath(image_path)
-    shortcut.Save()
+DEPRECATED - Use id_maker.py instead
 """
 
 def process_image(image_path,
@@ -56,7 +47,7 @@ def process_image(image_path,
     
     is_error = False
     original_filename, original_extension = os.path.splitext(os.path.basename(image_path))
-    image = cv2_imread_unicode(image_path)
+    image = cv2.imread(image_path)
     supported_formats = ["jpg", "jpeg", "png", "webp"]
     if original_extension.lower().lstrip(".") not in supported_formats:
         print(f"\rInvalid image format or unsupported format, skipping {original_filename}{original_extension}")
@@ -236,7 +227,7 @@ def draw_rectangle(endX,
     else:
         if not is_error:
             resized_image = cv2.resize(rect_region, (res_x, res_y))
-            cv2_imwrite_unicode(output_image_path, resized_image)
+            cv2.imwrite(output_image_path, resized_image)
     
     # Calculate the thickness of the rectangle based on the image resolution
     resolution_thickness_ratio = image.shape[1] // 128
