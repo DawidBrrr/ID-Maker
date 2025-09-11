@@ -6,6 +6,7 @@ import os
 import atexit
 import threading
 import time
+import sys
 
 from .config import config
 from .routes import register_routes
@@ -62,14 +63,23 @@ def setup_logging(app):
         '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
     ))
     file_handler.setLevel(logging.INFO)
-    
+
+    # Stream handler for stdout (Render dashboard)
+    stream_handler = logging.StreamHandler(sys.stdout)
+    stream_handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]'
+    ))
+    stream_handler.setLevel(logging.INFO)
+
     # Configure root logger to handle all loggers
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)
     root_logger.addHandler(file_handler)
-    
+    root_logger.addHandler(stream_handler)
+
     # Also configure app logger
     app.logger.addHandler(file_handler)
+    app.logger.addHandler(stream_handler)
     app.logger.setLevel(logging.INFO)
 
 def register_error_handlers(app):
