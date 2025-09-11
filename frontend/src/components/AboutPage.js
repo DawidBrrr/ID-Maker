@@ -10,9 +10,8 @@ const AboutPage = () => {
         <h2>Czym jest Kaidr?</h2>
         <p>
           Kaidr to nowoczesna aplikacja webowa zaprojektowana z myślą o automatycznym 
-          kadrowaniu i poprawianiu zdjęć do dokumentów urzędowych. Nasza technologia 
-          wykorzystuje zaawansowane algorytmy sztucznej inteligencji do precyzyjnego 
-          wykrywania twarzy i dostosowywania zdjęć zgodnie z wymaganiami różnych dokumentów.
+          kadrowaniu i poprawianiu zdjęć do dokumentów urzędowych. Została stworzona
+          jako projekt w ramach nauki programowania
         </p>
       </div>
 
@@ -53,31 +52,11 @@ const AboutPage = () => {
           instalacji dodatkowego oprogramowania. Obsługiwane formaty zdjęć to JPG, PNG i WEBP.
         </p>
       </div>
-
-      <div className={styles.section}>
-        <h2>Wsparcie techniczne</h2>
-        <p>
-          Jeśli napotkasz jakiekolwiek problemy z korzystaniem z aplikacji lub masz pytania 
-          dotyczące funkcjonalności, możesz skontaktować się z naszym zespołem wsparcia 
-          technicznego poprzez formularz kontaktowy.
-        </p>
-      </div>
-
-      <div className={styles.section}>
-        <h2>Przyszłe funkcje</h2>
-        <p>Planujemy wprowadzenie dodatkowych funkcji, takich jak:</p>
-        <ul>
-          <li>Wsparcie dla zdjęć grupowych</li>
-          <li>Dodatkowe formaty dokumentów</li>
-          <li>Zaawansowane opcje edycji</li>
-          <li>API dla deweloperów</li>
-        </ul>
-      </div>
-
+      
       <div className={styles.section}>
         <p>
           <strong>Dziękujemy za korzystanie z Kaidr!</strong><br/>
-          Zespół Kaidr
+          
         </p>
       </div>
     </div>
