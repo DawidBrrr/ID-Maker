@@ -2,6 +2,7 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 import logging
 from logging.handlers import RotatingFileHandler
+from dotenv import load_dotenv
 import os
 import atexit
 import threading
@@ -14,6 +15,9 @@ from .services.image_service import image_service
 from .services.task_service import task_service
 from .utils.helpers import cleanup_filesystem
 
+
+load_dotenv()
+
 def create_app():
     """Factory function do tworzenia aplikacji Flask"""
     app = Flask(__name__)
@@ -23,10 +27,11 @@ def create_app():
     
     
     # CORS - bardziej restrykcyjne w produkcji
+    origins = os.getenv('CORS_ORIGIN')
     if config.DEBUG:
         CORS(app)
     else:
-        CORS(app, origins=['https://kadr-backend.onrender.com'])
+        CORS(app, origins=[origins])
 
     # Logging
     setup_logging(app)
